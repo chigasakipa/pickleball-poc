@@ -1616,8 +1616,8 @@ const ReservationTab = ({
     myReservations: myReservations,
     onViewSchedule: onViewSchedule
   }), /*#__PURE__*/React.createElement(Divider, {
-    label: "待ち状況（会場別）"
-  }), events.filter(e => e.waiting > 0).map(ev => /*#__PURE__*/React.createElement("div", {
+    label: "待ち状況（本日開催の会場）"
+  }), events.filter(e => e.date === TODAY_ISO && e.waiting > 0).map(ev => /*#__PURE__*/React.createElement("div", {
     key: ev.id,
     className: "flex items-center justify-between card p-3.5 mb-2.5"
   }, /*#__PURE__*/React.createElement("div", {
@@ -2271,7 +2271,7 @@ function App() {
   const [tab, setTab] = useState("home");
   const [user, setUser] = useState(initialUser);
   const [events, setEvents] = useState(initialEvents);
-  const [myReservations, setMyReservations] = useState(["e1", "e3"]);
+  const [myReservations, setMyReservations] = useState(["e0-mid", "e0-all3"]);
   const [releases, setReleases] = useState(initialReleases);
   const [friends, setFriends] = useState(initialFriends);
   const [recruitPosts, setRecruitPosts] = useState(initialRecruitPosts);
