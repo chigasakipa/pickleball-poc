@@ -914,29 +914,33 @@ const initialRecruitPosts = [{
 const initialMatchHistory = [{
   id: "m1",
   date: "2026-06-28",
-  opponent: "佐藤 悠",
-  opponentLevel: 3.9,
+  partner: "佐藤 悠",
+  opponents: ["高橋 美咲", "鈴木 大輔"],
+  opponentLevel: 3.8,
   result: "win",
   scoreText: "11-7"
 }, {
   id: "m2",
   date: "2026-06-21",
-  opponent: "渡辺 健太",
-  opponentLevel: 3.6,
+  partner: "渡辺 健太",
+  opponents: ["伊藤 花", "山本 沙耶"],
+  opponentLevel: 2.95,
   result: "win",
   scoreText: "11-9"
 }, {
   id: "m3",
   date: "2026-06-14",
-  opponent: "中村 翔",
-  opponentLevel: 4.1,
+  partner: "中村 翔",
+  opponents: ["加藤 拓海", "吉田 optim"],
+  opponentLevel: 3.6,
   result: "lose",
   scoreText: "8-11"
 }, {
   id: "m4",
   date: "2026-05-30",
-  opponent: "加藤 拓海",
-  opponentLevel: 3.8,
+  partner: "加藤 拓海",
+  opponents: ["井上 陽菜", "小林 まどか"],
+  opponentLevel: 2.8,
   result: "win",
   scoreText: "11-6"
 }];
@@ -1883,14 +1887,19 @@ const RecordTab = ({
   setMatchHistory,
   allPlayers
 }) => {
-  const [opponentId, setOpponentId] = useState(allPlayers[0].id);
+  const [partnerId, setPartnerId] = useState(allPlayers[1].id);
+  const [opponent1Id, setOpponent1Id] = useState(allPlayers[0].id);
+  const [opponent2Id, setOpponent2Id] = useState(allPlayers[2].id);
   const [result, setResult] = useState("win");
   const [score, setScore] = useState("11-7");
   const [flash, setFlash] = useState(null);
-  const opponent = allPlayers.find(p => p.id === opponentId);
+  const partner = allPlayers.find(p => p.id === partnerId);
+  const opponent1 = allPlayers.find(p => p.id === opponent1Id);
+  const opponent2 = allPlayers.find(p => p.id === opponent2Id);
+  const oppAvgLevel = (opponent1.level + opponent2.level) / 2;
   const submit = () => {
     const didWin = result === "win";
-    const newLevel = calcNewLevel(user.level, opponent.level, didWin);
+    const newLevel = calcNewLevel(user.level, oppAvgLevel, didWin);
     const delta = Math.round((newLevel - user.level) * 100) / 100;
     setUser(u => ({
       ...u,
@@ -1902,8 +1911,9 @@ const RecordTab = ({
     setMatchHistory(h => [{
       id: "m" + Date.now(),
       date: "2026-07-05",
-      opponent: opponent.name,
-      opponentLevel: opponent.level,
+      partner: partner.name,
+      opponents: [opponent1.name, opponent2.name],
+      opponentLevel: oppAvgLevel,
       result,
       scoreText: score
     }, ...h]);
@@ -1913,7 +1923,7 @@ const RecordTab = ({
   return /*#__PURE__*/React.createElement("div", {
     className: "px-5 pb-6"
   }, /*#__PURE__*/React.createElement(Divider, {
-    label: "試合結果を登録"
+    label: "試合結果を登録（ダブルス）"
   }), /*#__PURE__*/React.createElement("div", {
     className: "card p-4"
   }, /*#__PURE__*/React.createElement("div", {
@@ -1921,9 +1931,39 @@ const RecordTab = ({
     style: {
       color: "var(--ink-soft)"
     }
-  }, "対戦相手"), /*#__PURE__*/React.createElement("select", {
-    value: opponentId,
-    onChange: e => setOpponentId(e.target.value),
+  }, "自分のパートナー"), /*#__PURE__*/React.createElement("select", {
+    value: partnerId,
+    onChange: e => setPartnerId(e.target.value),
+    className: "w-full p-2.5 rounded-lg border text-sm outline-none",
+    style: {
+      borderColor: "var(--line)"
+    }
+  }, allPlayers.map(p => /*#__PURE__*/React.createElement("option", {
+    key: p.id,
+    value: p.id
+  }, p.name, "（Lv", p.level.toFixed(2), "）"))), /*#__PURE__*/React.createElement("div", {
+    className: "font-cond text-xs font-bold uppercase mt-4 mb-1.5",
+    style: {
+      color: "var(--ink-soft)"
+    }
+  }, "対戦相手 1"), /*#__PURE__*/React.createElement("select", {
+    value: opponent1Id,
+    onChange: e => setOpponent1Id(e.target.value),
+    className: "w-full p-2.5 rounded-lg border text-sm outline-none",
+    style: {
+      borderColor: "var(--line)"
+    }
+  }, allPlayers.map(p => /*#__PURE__*/React.createElement("option", {
+    key: p.id,
+    value: p.id
+  }, p.name, "（Lv", p.level.toFixed(2), "）"))), /*#__PURE__*/React.createElement("div", {
+    className: "font-cond text-xs font-bold uppercase mt-4 mb-1.5",
+    style: {
+      color: "var(--ink-soft)"
+    }
+  }, "対戦相手 2"), /*#__PURE__*/React.createElement("select", {
+    value: opponent2Id,
+    onChange: e => setOpponent2Id(e.target.value),
     className: "w-full p-2.5 rounded-lg border text-sm outline-none",
     style: {
       borderColor: "var(--line)"
@@ -1984,7 +2024,12 @@ const RecordTab = ({
     style: {
       color: "var(--ink)"
     }
-  }, "vs ", m.opponent, /*#__PURE__*/React.createElement("span", {
+  }, user.name, "・", m.partner, " ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: "var(--ink-soft)",
+      fontWeight: 400
+    }
+  }, "vs"), " ", m.opponents[0], "・", m.opponents[1], /*#__PURE__*/React.createElement("span", {
     className: "font-mono text-[11px] font-normal ml-1.5",
     style: {
       color: "var(--ink-soft)"
