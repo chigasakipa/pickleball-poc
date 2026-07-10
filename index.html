@@ -1747,9 +1747,6 @@ const LEVEL_FILTER_LABEL = {
   adv: "上級"
 };
 const FORMAT_FILTER_OPTIONS = [{
-  id: "all",
-  label: "すべて"
-}, {
   id: "ミニ大会",
   label: "大会"
 }, {
@@ -1782,6 +1779,11 @@ const HomeTab = ({
     const matchFormat = formatFilter === "all" || e.format === formatFilter;
     return matchQ && matchesLevelFilter(e, levelFilter) && matchFormat;
   }), [events, query, levelFilter, formatFilter]);
+
+  // 区分フィルタ・キーワード検索を使っている間は、その場で検索結果を表示する
+  // （本日開催・おすすめより下にある「イベント一覧」だけが変わる従来の構成だと、
+  // 　ボタンのすぐ近くに変化が出ず「機能していない」ように見えてしまうため）
+  const isSearching = formatFilter !== "all" || query.trim() !== "";
   return /*#__PURE__*/React.createElement("div", {
     className: "px-5 pb-6"
   }, /*#__PURE__*/React.createElement("div", {
@@ -1798,17 +1800,43 @@ const HomeTab = ({
     className: "w-full pl-9 pr-3 py-2.5 rounded-xl text-sm outline-none card"
   })), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap gap-2 mt-3"
-  }, [["all", "すべて"], ["beginner", "初級"], ["mid", "中級"], ["adv", "上級"]].map(([k, l]) => /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      setLevelFilter("all");
+      setFormatFilter("all");
+    },
+    className: "chip whitespace-nowrap " + (levelFilter === "all" && formatFilter === "all" ? "btn-primary" : "btn-outline")
+  }, "すべて"), [["beginner", "初級"], ["mid", "中級"], ["adv", "上級"]].map(([k, l]) => /*#__PURE__*/React.createElement("button", {
     key: k,
     onClick: () => setLevelFilter(k),
     className: "chip whitespace-nowrap " + (levelFilter === k ? "btn-primary" : "btn-outline")
-  }, l))), /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-wrap gap-2 mt-2"
-  }, FORMAT_FILTER_OPTIONS.map(opt => /*#__PURE__*/React.createElement("button", {
+  }, l)), FORMAT_FILTER_OPTIONS.map(opt => /*#__PURE__*/React.createElement("button", {
     key: opt.id,
     onClick: () => setFormatFilter(opt.id),
     className: "chip whitespace-nowrap " + (formatFilter === opt.id ? "btn-primary" : "btn-outline")
-  }, opt.label))), /*#__PURE__*/React.createElement(Divider, {
+  }, opt.label))), isSearching ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Divider, {
+    label: `検索結果 (${filtered.length}件)`
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "text-[12px] mb-2 -mt-1",
+    style: {
+      color: "var(--ink-soft)"
+    }
+  }, "区分・レベル・キーワードで絞り込んだ結果です。「すべて」に戻すと通常のホーム表示に戻ります。"), filtered.length === 0 ? /*#__PURE__*/React.createElement("div", {
+    className: "text-xs text-center py-8 card",
+    style: {
+      color: "var(--ink-soft)"
+    }
+  }, "条件に一致するイベントが見つかりませんでした。", /*#__PURE__*/React.createElement("br", null), "レベル・区分・キーワードの条件を変えてお試しください。") : filtered.map(ev => /*#__PURE__*/React.createElement(EventCard, {
+    key: ev.id,
+    ev: ev,
+    user: user,
+    reservedByMe: myReservations.includes(ev.id),
+    onReserve: onReserve,
+    onViewSchedule: onViewSchedule,
+    onViewCoach: onViewCoach,
+    onViewDraw: onViewDraw,
+    recommended: recommended.some(r => r.id === ev.id)
+  }))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Divider, {
     label: `本日開催（${LEVEL_FILTER_LABEL[levelFilter]}）`
   }), /*#__PURE__*/React.createElement("div", {
     className: "text-[12px] mb-2 -mt-1",
@@ -1876,7 +1904,7 @@ const HomeTab = ({
     onViewCoach: onViewCoach,
     onViewDraw: onViewDraw,
     recommended: recommended.some(r => r.id === ev.id)
-  })));
+  }))));
 };
 
 /* ---------------------------------------------------------
